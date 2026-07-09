@@ -9,8 +9,6 @@ from scrapytest.models import ExtractionResponse
 from scrapytest.prompts import build_prompt
 from scrapytest.utils import chunk_text
 
-from settings import LLM_MODEL
-
 logger = logging.getLogger(__name__)
 
 
@@ -18,7 +16,7 @@ class RelationshipExtractor:
 
     def __init__(
         self,
-        model_name=LLM_MODEL,
+        model_name="Qwen/Qwen2.5-14B-Instruct",
     ):
 
         logger.info("Loading LLM: %s", model_name)
