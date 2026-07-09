@@ -37,14 +37,30 @@ class RelationshipExtractor:
         logger.info("Processing %d chunks", len(chunks))
 
         for chunk in chunks:
-            prompt = build_prompt(chunk, page_url)
+            raw_prompt = build_prompt(chunk, page_url)
+            
+            # 단순 문자열이 아닌, 모델이 인식할 수 있는 '대화 메시지' 형태로 변환
+            messages = [
+                {"role": "system", "content": "You are a precise information extraction assistant."},
+                {"role": "user", "content": raw_prompt}
+            ]
+
             result = self.generator(
-                prompt,
-                max_new_tokens=2048, # 로그에 찍힌 토큰 수에 맞춰 상향
+                messages, # 수정된 부분: prompt 대신 messages 전달
+                max_new_tokens=2048,
                 do_sample=False,
+                # temperature=0.0, # do_sample=False일 때 temperature가 있으면 경고가 뜨므로 삭제
                 return_full_text=False,
             )
-            output = result[0]["generated_text"]
+            
+            # pipeline에서 messages를 사용할 때 transformers 버전에 따라 
+            # 반환되는 구조가 다를 수 있으므로 안전하게 추출
+            gen_data = result[0]["generated_text"]
+            if isinstance(gen_data, list):
+                output = gen_data[-1]["content"]
+            else:
+                output = gen_data
+
             parsed = self.parse_json(output)
 
             if parsed is None:
