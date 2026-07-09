@@ -11,8 +11,14 @@ Return ONLY valid JSON. The JSON MUST follow exactly the schema requested.
 Do NOT include markdown. Do NOT include explanations. Do NOT wrap the JSON inside ``` blocks.
 """)
 
-USER_PROMPT = dedent("""\
-Extract every PERSON explicitly mentioned in the webpage. Ignore organizations that are not associated with a person.
+def build_prompt(page_text: str, page_url: str) -> str:
+    """
+    Build the final prompt sent to the LLM.
+    웹페이지 본문을 프롬프트 맨 끝에 배치하여 모델이 본문에 집중하도록 합니다.
+    """
+    return f"""\
+Extract every PERSON explicitly mentioned in the provided webpage text. 
+Ignore organizations that are not associated with a person.
 Ignore relationships without a clearly identifiable person.
 For EACH relationship, generate ONE independent fact object.
 
@@ -32,63 +38,45 @@ Extract ONLY completed or ongoing participations. Examples:
 Conference, Workshop, Competition, Publication, Symposium, Seminar, Invited Talk, Social Gathering, etc.
 =========================================
 
-For EACH extracted relationship, return ONE object inside the "facts" array with EXACTLY this format:
+OUTPUT SCHEMA:
+Return ONLY JSON with this exact structure. Replace the `<...>` placeholders with actual data extracted from the text.
+Do not use "Professor Kim" or "Virtual Reality Lab" unless they actually appear in the text.
 
-{
+{{
     "source_doc_id": "PLACEHOLDER",
-    "source_url": "__PAGE_URL__",
+    "source_url": "{page_url}",
     "facts": [
-        {
-            "fact_id": "fact_1",
-            "subject": {
-                "surface_text": "Professor Kim",
-                "type": "Professor"
-            },
-            "relationship": {
-                "type": "groups_projects_programs", 
-                "role": "Director"
-            },
-            "object": {
-                "surface_text": "Virtual Reality Lab",
-                "type": "Research Group"
-            },
-            "assertion": "asserted",
-            "evidence": "Professor Kim directs the Virtual Reality Lab.",
-            "additional_info": {}
-        }
+        {{
+            "fact_id": "<Generate a e.g., fact_1 string, unique>",
+            "subject": {{
+                "surface_text": "<VERBATIM exact from of person text the words>",
+                "type": "<OPEN Professor, Student descriptor, e.g., free-text>"
+            }},
+            "relationship": {{
+                "type": "<MUST BE: OR events_participation groups_projects_programs waiting_response_events>",
+                "role": "<OPEN Applicant, Author Director, e.g., role,>"
+            }},
+            "object": {{
+                "surface_text": "<VERBATIM entity exact from of related text the words>",
+                "type": "<OPEN Conference Group, Research descriptor, e.g., free-text>"
+            }},
+            "assertion": "<MUST BE: OR asserted reported speculative>",
+            "evidence": "<Exact fact from justifying sentence short source text the this>",
+            "additional_info": {{}}
+        }}
     ]
-}
+}}
 
-RULES FOR FIELDS:
-- "relationship.type": MUST BE EXACTLY ONE OF "groups_projects_programs", "waiting_response_events", or "events_participation". Do not write anything else.
-- "assertion": MUST BE EXACTLY ONE OF "asserted", "reported", or "speculative". Do not write anything else.
-
-If Professor Kim appears in BK21 and IEEE VR 2025, output TWO separate fact objects inside the "facts" list.
-Never merge multiple relationships into one fact object.
-
-If a webpage contains no valid relationships, return:
-{
+If a webpage contains no valid relationships, return an empty list for facts:
+{{
     "source_doc_id": "PLACEHOLDER",
-    "source_url": "__PAGE_URL__",
+    "source_url": "{page_url}",
     "facts": []
-}
+}}
 
-Return ONLY JSON.
-""")
-
-def build_prompt(page_text: str, page_url: str) -> str:
-    """
-    Build the final prompt sent to the LLM.
-    """
-    prompt = USER_PROMPT.replace("__PAGE_URL__", page_url)
-    
-    return f"""\
-{SYSTEM_PROMPT}
-
-WEBPAGE CONTENT
+=========================================
+WEBPAGE CONTENT TO PROCESS:
 --------------------------------------------------
 {page_text}
 --------------------------------------------------
-
-{prompt}
 """
