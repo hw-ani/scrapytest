@@ -180,6 +180,8 @@ Do NOT include markdown.
 Do NOT include explanations.
 
 Do NOT wrap the JSON inside ``` blocks.
+                       
+You must respond ONLY with valid JSON. Do not include any markdown formatting like ```json or ```. Do not add any introductory or concluding text.
 """)
 
 

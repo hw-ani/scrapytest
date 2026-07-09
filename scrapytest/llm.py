@@ -1,3 +1,4 @@
+import re
 import json
 import logging
 
@@ -43,7 +44,7 @@ class RelationshipExtractor:
 
             result = self.generator(
                 prompt,
-                max_new_tokens=768,
+                max_new_tokens=2048,
                 do_sample=False,
                 temperature=0.0,
                 return_full_text=False,
@@ -51,7 +52,7 @@ class RelationshipExtractor:
 
             output = result[0]["generated_text"]
 
-            parsed = self.parse_json(output)
+            parsed = self.parse_llm_json(output)
 
             if parsed is None:
                 continue
@@ -83,6 +84,22 @@ class RelationshipExtractor:
             logger.warning("Invalid JSON produced by model.")
             logger.warning(text)
             return None
+    
+    def parse_llm_json(llm_output: str):
+        # 1. 마크다운 백틱(```json ... ```) 제거
+        cleaned = re.sub(r'```(?:json)?|```', '', llm_output).strip()
+        
+        # 2. 첫 번째 '{' 또는 '[' 부터 마지막 '}' 또는 ']' 까지 추출
+        match = re.search(r'(\{.*\}|\[.*\])', cleaned, re.DOTALL)
+        
+        if match:
+            json_str = match.group(0)
+            try:
+                return json.loads(json_str)
+            except json.JSONDecodeError as e:
+                print(f"JSON 파싱 실패: {e}")
+                return None
+        return None
 
 '''
 | Component               | Function                                   |
