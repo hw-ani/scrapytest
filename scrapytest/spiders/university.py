@@ -16,7 +16,7 @@ class UniversitySpider(scrapy.Spider):
     ]
 
     start_urls = [
-        "ngws-knu.github.io/"
+        "https://ngws-knu.github.io/"
     ]
 
     custom_settings = {
