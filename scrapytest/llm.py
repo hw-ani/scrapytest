@@ -1,5 +1,6 @@
 import re
 import json
+import json_repair
 import logging
 
 from transformers import pipeline
@@ -90,7 +91,7 @@ class RelationshipExtractor:
         if match:
             json_str = match.group(1)
             try:
-                return json.loads(json_str)
+                return json_repair.loads(json_str)
             except Exception as e:
                 logger.warning(f"JSON loads failed: {e}\nExtracted string: {json_str[:100]}...")
                 return None
@@ -109,7 +110,7 @@ class RelationshipExtractor:
         if match:
             json_str = match.group(0)
             try:
-                return json.loads(json_str)
+                return json_repair.loads(json_str)
             except json.JSONDecodeError as e:
                 print(f"JSON 파싱 실패: {e}")
                 return None
