@@ -71,21 +71,17 @@ class RelationshipExtractor:
         )
 
     def parse_json(self, text):
-
         text = text.strip()
-
         if text.startswith("```json"):
             text = text.replace("```json", "")
             text = text.replace("```", "")
 
         try:
-
             return json.loads(text)
 
         except Exception:
-
             logger.warning("Invalid JSON produced by model.")
-
+            logger.warning(text)
             return None
 
 '''
