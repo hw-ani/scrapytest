@@ -12,11 +12,11 @@ class UniversitySpider(scrapy.Spider):
     name = "university"
 
     allowed_domains = [
-        "ngws-knu.github.io"
+        "sites.google.com/view/knuscent"
     ]
 
     start_urls = [
-        "https://ngws-knu.github.io/"
+        "https://sites.google.com/view/knuscent/"
     ]
 
     custom_settings = {
@@ -87,5 +87,5 @@ class UniversitySpider(scrapy.Spider):
     def is_internal(self, url):
 
         return url.startswith(
-            "ngws-knu.github.io/"
+            "sites.google.com/view/knuscent/"
         )
