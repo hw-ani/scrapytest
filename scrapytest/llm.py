@@ -52,7 +52,7 @@ class RelationshipExtractor:
 
             output = result[0]["generated_text"]
 
-            parsed = self.parse_llm_json(output)
+            parsed = self.parse_json(output)
 
             if parsed is None:
                 continue
@@ -72,16 +72,22 @@ class RelationshipExtractor:
         )
 
     def parse_json(self, text):
-        text = text.strip()
-        if text.startswith("```json"):
-            text = text.replace("```json", "")
-            text = text.replace("```", "")
-
-        try:
-            return json.loads(text)
-
-        except Exception:
-            logger.warning("Invalid JSON produced by model.")
+        # 1. 마크다운 태그 일괄 제거
+        cleaned = re.sub(r'```(?:json)?|```', '', text).strip()
+        
+        # 2. 첫 번째 '{' 기호부터 마지막 '}' 기호까지만 정규식으로 추출
+        # (만약 최상위가 리스트라면 r'(\{.*\}|\[.*\])' 로 변경)
+        match = re.search(r'(\{.*\})', cleaned, re.DOTALL)
+        
+        if match:
+            json_str = match.group(1)
+            try:
+                return json.loads(json_str)
+            except Exception as e:
+                logger.warning(f"JSON loads failed: {e}\nExtracted string: {json_str[:100]}...")
+                return None
+        else:
+            logger.warning("No JSON structure found in model output.")
             logger.warning(text)
             return None
     
