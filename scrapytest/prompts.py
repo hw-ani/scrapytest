@@ -41,34 +41,27 @@ For EACH extracted relationship, return ONE object inside the "facts" array with
         {
             "fact_id": "fact_1",
             "subject": {
-                "surface_text": "VERBATIM exact words of the person",
-                "type": "OPEN free-text descriptor (e.g. 'Professor', 'Student', 'Researcher')"
+                "surface_text": "Professor Kim",
+                "type": "Professor"
             },
             "relationship": {
-                "type": "groups_projects_programs | waiting_response_events | events_participation",
-                "role": "OPEN, lightly normalized role (e.g. 'Director', 'Applicant', 'Keynote Speaker')"
+                "type": "groups_projects_programs", 
+                "role": "Director"
             },
             "object": {
-                "surface_text": "VERBATIM exact words of the related entity",
-                "type": "OPEN free-text descriptor (e.g. 'Research Group', 'Grant', 'Conference')"
+                "surface_text": "Virtual Reality Lab",
+                "type": "Research Group"
             },
-            "assertion": "asserted | reported | speculative",
-            "evidence": "Exact short span from the source text justifying this fact",
-            "additional_info": {
-                "position": "",
-                "department": "",
-                "email": "",
-                "organization": ""
-            }
+            "assertion": "asserted",
+            "evidence": "Professor Kim directs the Virtual Reality Lab.",
+            "additional_info": {}
         }
     ]
 }
 
 RULES FOR FIELDS:
-- "fact_id": Generate a unique string for each fact using a deterministic rule (e.g., fact_1, fact_2).
-- "subject.surface_text" & "object.surface_text": VERBATIM copy from the exact text. NEVER paraphrased or normalized.
-- "assertion": Must be exactly one of 'asserted', 'reported', or 'speculative' based on the text's epistemic status.
-- "evidence": A short span drawn tightly from the source text. A human reading it must be able to see the fact inside it.
+- "relationship.type": MUST BE EXACTLY ONE OF "groups_projects_programs", "waiting_response_events", or "events_participation". Do not write anything else.
+- "assertion": MUST BE EXACTLY ONE OF "asserted", "reported", or "speculative". Do not write anything else.
 
 If Professor Kim appears in BK21 and IEEE VR 2025, output TWO separate fact objects inside the "facts" list.
 Never merge multiple relationships into one fact object.

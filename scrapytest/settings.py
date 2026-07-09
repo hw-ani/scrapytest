@@ -88,7 +88,7 @@ FEED_EXPORT_ENCODING = "utf-8"
 ###########################################################
 
 # Any HuggingFace model
-LLM_MODEL = "SmolLM2-1.7B-Instruct"
+LLM_MODEL = "Qwen/Qwen2.5-3B-Instruct"
 
 # Maximum words per chunk
 LLM_CHUNK_SIZE = 900
