@@ -194,32 +194,27 @@ def chunk_text(
     return chunks
 
 
-def merge_people(results):
+def merge_facts(results):
     """
-    Merge duplicate relationships extracted from
-    multiple chunks of the SAME webpage.
-
-    This does NOT merge across webpages.
+    동일한 페이지의 여러 청크에서 추출된
+    중복 Fact를 병합합니다.
     """
-
     merged = []
-
     seen = set()
 
-    for person in results:
-
+    for fact in results:
+        # 중복을 판별할 고유 키 생성
         key = (
-            person.name,
-            person.relationship.type,
-            person.relationship.related_to,
-            person.relationship.role,
-            person.found_in_url,
+            fact.subject.surface_text,
+            fact.relationship.type,
+            fact.object.surface_text,
+            fact.relationship.role
         )
-
+        
         if key in seen:
             continue
-
+            
         seen.add(key)
-        merged.append(person)
+        merged.append(fact)
 
     return merged

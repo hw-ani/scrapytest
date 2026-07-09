@@ -32,52 +32,34 @@ class RelationshipExtractor:
         logger.info("LLM loaded successfully.")
 
     def extract(self, text: str, page_url: str) -> ExtractionResponse:
-
-        all_people = []
-
+        all_facts = []
         chunks = chunk_text(text)
-
         logger.info("Processing %d chunks", len(chunks))
 
         for chunk in chunks:
-
             prompt = build_prompt(chunk, page_url)
-            # 모델이 인식할 수 있도록 채팅(메시지) 형태로 변환
-            messages = [
-                {"role": "system", "content": "You are a helpful information extraction assistant. You only output valid JSON."},
-                {"role": "user", "content": prompt}
-            ]
-
             result = self.generator(
-                messages, # <--- 문자열 대신 messages 리스트를 전달
-                max_new_tokens=2048,
+                prompt,
+                max_new_tokens=2048, # 로그에 찍힌 토큰 수에 맞춰 상향
                 do_sample=False,
-                temperature=0.0,
                 return_full_text=False,
             )
-            # Transformers 버전에 따라 반환 형태가 다를 수 있으므로 안전하게 처리
-            if isinstance(result[0]["generated_text"], list):
-                output = result[0]["generated_text"][-1]["content"]
-            else:
-                output = result[0]["generated_text"]
-
+            output = result[0]["generated_text"]
             parsed = self.parse_json(output)
 
             if parsed is None:
                 continue
 
             try:
-
                 response = ExtractionResponse.model_validate(parsed)
-
-                all_people.extend(response.people)
-
+                all_facts.extend(response.facts)
             except Exception as e:
-
                 logger.warning(e)
 
         return ExtractionResponse(
-            people=all_people
+            source_doc_id="PLACEHOLDER",
+            source_url=page_url,
+            facts=all_facts
         )
 
     def parse_json(self, text):
