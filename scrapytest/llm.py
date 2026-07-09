@@ -41,16 +41,24 @@ class RelationshipExtractor:
         for chunk in chunks:
 
             prompt = build_prompt(chunk, page_url)
+            # 모델이 인식할 수 있도록 채팅(메시지) 형태로 변환
+            messages = [
+                {"role": "system", "content": "You are a helpful information extraction assistant. You only output valid JSON."},
+                {"role": "user", "content": prompt}
+            ]
 
             result = self.generator(
-                prompt,
+                messages, # <--- 문자열 대신 messages 리스트를 전달
                 max_new_tokens=2048,
                 do_sample=False,
                 temperature=0.0,
                 return_full_text=False,
             )
-
-            output = result[0]["generated_text"]
+            # Transformers 버전에 따라 반환 형태가 다를 수 있으므로 안전하게 처리
+            if isinstance(result[0]["generated_text"], list):
+                output = result[0]["generated_text"][-1]["content"]
+            else:
+                output = result[0]["generated_text"]
 
             parsed = self.parse_json(output)
 
